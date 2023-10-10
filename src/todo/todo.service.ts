@@ -1,10 +1,17 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { Todo } from './models/todo';
+import { Status, Todo } from './models/todo';
 import { addDto, modifyDto } from './dtos';
+import { InjectRepository } from '@nestjs/typeorm';
+import { TodoEntity } from './entities/todo.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class TodoService {
   @Inject('UUID') Id;
+  constructor(
+    @InjectRepository(TodoEntity)
+    private TodoRepository: Repository<TodoEntity>,
+  ) {}
   private todos: Todo[] = [];
   getToDos(): Todo[] {
     return this.todos;
@@ -37,5 +44,56 @@ export class TodoService {
     aux.setdescription(body.description);
     aux.setstatus(body.status);
     return aux;
+  }
+  async addTodoToDB(body: addDto): Promise<TodoEntity> {
+    return this.TodoRepository.save(body);
+  }
+  async getTodosFromDB(): Promise<TodoEntity[]> {
+    return await this.TodoRepository.find();
+  }
+  async getTodoFromDB(id: string): Promise<TodoEntity[]> {
+    const aux = await this.TodoRepository.findBy({ id: id });
+    if (!aux) {
+      throw new NotFoundException("Couldn't find any Todo by that id 🤔");
+    }
+    return aux;
+  }
+  async modifyTodoInBD(id: string, body: modifyDto): Promise<TodoEntity> {
+    const aux = await this.TodoRepository.preload({ id, ...body });
+    return await this.TodoRepository.save(aux);
+  }
+  async removeTodoFromBD(id: string): Promise<TodoEntity> {
+    const aux = await this.TodoRepository.findOneBy({ id });
+    if (!aux) {
+      throw new NotFoundException("Couldn't find any Todo by that id 🤔");
+    }
+    return await this.TodoRepository.remove(aux);
+  }
+  async softRemoveTodoFromBD(id: string): Promise<TodoEntity> {
+    const aux = await this.TodoRepository.findOneBy({ id });
+    if (!aux) {
+      throw new NotFoundException("Couldn't find any Todo by that id 🤔");
+    }
+    return await this.TodoRepository.softRemove(aux);
+  }
+  async restoreTodo(id: string): Promise<TodoEntity> {
+    const aux = await this.TodoRepository.findOneBy({ id });
+    return await this.TodoRepository.recover(aux);
+  }
+  async statusStats(status?: Status.actif | Status.waiting | Status.done) {
+    if (status)
+      return await this.TodoRepository.countBy({
+        status: status,
+      });
+    const actifTodos = await this.TodoRepository.countBy({
+      status: Status.actif,
+    });
+    const waitingTodos = await this.TodoRepository.countBy({
+      status: Status.waiting,
+    });
+    const doneTodos = await this.TodoRepository.countBy({
+      status: Status.done,
+    });
+    return `${actifTodos} actif Todos, ${waitingTodos} waiting Todos, ${doneTodos} done Todos`;
   }
 }

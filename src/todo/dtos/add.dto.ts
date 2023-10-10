@@ -17,10 +17,10 @@ export class addDto {
   name: string;
 
   @IsNotEmpty({ message: 'A description is required!' })
-  @MinLength(15, { message: dtoErrorMessage(true) })
+  @MinLength(10, { message: dtoErrorMessage(true) })
   description: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @ValidateNested()
   @Type(() => userDto)
   owner: userDto;

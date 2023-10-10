@@ -27,7 +27,9 @@ export class Todo {
     this.status = Status.waiting;
     this.dateDeCreation = new Date();
     this.priority = priority;
-    this.owner = new User(owner.name, owner.age);
+    if (owner) {
+      this.owner = new User(owner.name, owner.age);
+    }
   }
   public getid(): string {
     return this.id;

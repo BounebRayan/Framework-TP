@@ -48,6 +48,12 @@ export class TodoService {
   async addTodoToDB(body: addDto): Promise<TodoEntity> {
     return this.TodoRepository.save(body);
   }
+  async getAll(page: number = 1): Promise<TodoEntity[]> {
+    return await this.TodoRepository.find({
+      skip: (page - 1) * 10,
+      take: 10,
+    });
+  }
   async getTodosFromDB(): Promise<TodoEntity[]> {
     return await this.TodoRepository.find();
   }

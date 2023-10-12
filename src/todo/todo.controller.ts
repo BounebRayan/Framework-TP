@@ -4,8 +4,10 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
+  Query,
   Version,
 } from '@nestjs/common';
 import { Status, Todo } from './models/todo';
@@ -26,6 +28,12 @@ export class TodoController {
   @Version('2')
   getToDosFromDB(): Promise<TodoEntity[]> {
     return this.TodoService.getTodosFromDB();
+  }
+  @Get()
+  @Version('3')
+  getAll(@Query('page', ParseIntPipe) page: number): Promise<TodoEntity[]> {
+    if (!page) page = 1;
+    return this.TodoService.getAll(page);
   }
   @Get('/stats/:status?')
   getTodoStatusStats(

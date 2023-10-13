@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Query,
+  UseInterceptors,
   Version,
 } from '@nestjs/common';
 import { Status, Todo } from './models/todo';
@@ -15,6 +16,7 @@ import { addDto, modifyDto } from './dtos';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { TodoService } from './todo.service';
 import { TodoEntity } from './entities/todo.entity';
+import { PagingInterceptor } from 'src/interceptors/paging.interceptor';
 
 @Controller('todo')
 export class TodoController {
@@ -30,6 +32,7 @@ export class TodoController {
     return this.TodoService.getTodosFromDB();
   }
   @Get()
+  @UseInterceptors(PagingInterceptor)
   @Version('3')
   getAll(@Query('page', ParseIntPipe) page: number): Promise<TodoEntity[]> {
     if (!page) page = 1;

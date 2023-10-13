@@ -4,7 +4,7 @@ import { FusionUpperPipe } from 'src/pipes/fusion-upper.pipe';
 @Controller('others')
 export class OthersController {
   @Post('/skills')
-  @UsePipes(new FusionUpperPipe())
+  @UsePipes(FusionUpperPipe)
   postSkills(@Body() skills): string {
     return skills;
   }
